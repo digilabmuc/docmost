@@ -5,23 +5,37 @@ import { notifications } from '@mantine/notifications';
 import { createSyncConfig, updateSyncConfig } from '../services/sync-service';
 import { ISyncConfig } from '../types/sync.types';
 import { Octokit } from '@octokit/rest';
-import { importPage, deletePage, getRecentChanges } from '@/features/page/services/page-service';
+import { importPage, deletePage, getRecentChanges, updatePage } from '@/features/page/services/page-service';
 import { getSpaces } from '@/features/space/services/space-service';
 import { ISpace } from '@/features/space/types/space.types';
 import { useNavigate } from 'react-router-dom';
 import { buildPageUrl } from '@/features/page/page.utils';
 
-// List of emojis suitable for documentation/knowledge base
 const DOCUMENT_EMOJIS = [
   "📄", "📝", "📚", "📖", "📗", "📘", "📙", "📔", "📒", "📕",
   "🗂️", "📁", "📂", "🗄️", "📋", "📌", "📎", "🔖", "📑", "🏷️",
   "✏️", "✍️", "🖋️", "📰", "🗞️", "📓", "💭", "💡", "🎯", "🔍",
-  "🌟", "⭐", "🌈", "🎨", "🎬", "🎮", "🎲", "🧩", "🔧", "⚙️"
+  "🌟", "⭐", "🌈", "🎨", "🎬", "🎮", "🎲", "🧩", "🔧", "⚙️",
+  "📊", "📈", "📉", "🔎", "🔗", "📍", "🎓", "🎯", "💻", "⌨️",
+  "🖥️", "🌐", "🛠️", "🔨", "🪛", "📱", "💾", "💿", "🗃️", "📐",
+  "📏", "✂️", "🗑️", "📥", "📤", "📫", "📪", "🔔", "🔕", "📢",
+  "📣", "💬", "🗨️", "🗯️", "💠", "🔆", "✨", "🎪", "🎨", "🎭",
+  "🎪", "🎫", "🎟️", "🏆", "🏅", "🎖️", "⚜️", "🔱", "📌", "🎯"
 ];
 
+let usedEmojis = new Set();
+
 const getRandomEmoji = () => {
-  const randomIndex = Math.floor(Math.random() * DOCUMENT_EMOJIS.length);
-  return DOCUMENT_EMOJIS[randomIndex];
+  if (usedEmojis.size >= DOCUMENT_EMOJIS.length) {
+    usedEmojis.clear();
+  }
+  const availableEmojis = DOCUMENT_EMOJIS.filter(emoji => !usedEmojis.has(emoji));
+  
+  const randomIndex = Math.floor(Math.random() * availableEmojis.length);
+  const selectedEmoji = availableEmojis[randomIndex];
+  usedEmojis.add(selectedEmoji);
+  
+  return selectedEmoji;
 };
 
 interface SyncConfigFormProps {
@@ -215,21 +229,25 @@ export const SyncConfigForm: React.FC<SyncConfigFormProps> = ({
           });
 
           const content = atob(blob.data.content);
+          const emoji = getRandomEmoji();
+          const fileName = file.name.replace('.md', '');
+          
           const fileObj = new File([new TextEncoder().encode(content)], file.name, {
             type: 'text/markdown',
           });
-
-          // Add random emoji to the page name
-          const emoji = getRandomEmoji();
-          const fileName = file.name.replace('.md', '');
-          const pageTitle = `${emoji} ${fileName}`;
           
-          const importedPage = await importPage(fileObj, values.targetConfig.spaceId, pageTitle);
+          const importedPage = await importPage(fileObj, values.targetConfig.spaceId);
+          await updatePage({
+            pageId: importedPage.id,
+            title: fileName,
+            icon: emoji
+          });
+          
           lastImportedPage = importedPage;
           
           notifications.show({
             title: 'Success',
-            message: `Imported ${pageTitle}`,
+            message: `Imported ${fileName} ${emoji}`,
             color: 'green',
           });
         } catch (error) {

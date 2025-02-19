@@ -10,6 +10,7 @@ import {
   SpaceCaslSubject,
 } from "@/features/space/permissions/permissions.type.ts";
 import { useTranslation } from "react-i18next";
+import { SyncConfigForm } from "@/features/sync/components/SyncConfigForm.tsx";
 
 interface SpaceSettingsModalProps {
   spaceId: string;
@@ -37,7 +38,7 @@ export default function SpaceSettingsModal({
         padding="xl"
         yOffset="10vh"
         xOffset={0}
-        mah={400}
+        mah={700}
       >
         <Modal.Overlay/>
         <Modal.Content style={{overflow: "hidden"}}>
@@ -54,6 +55,9 @@ export default function SpaceSettingsModal({
                   <Tabs.Tab fw={500} value="general">
                     {t("Settings")}
                   </Tabs.Tab>
+                  <Tabs.Tab fw={500} value="sync">
+                    {t("Sync")}
+                  </Tabs.Tab>
                   <Tabs.Tab fw={500} value="members">
                     {t("Members")}
                   </Tabs.Tab>
@@ -67,6 +71,10 @@ export default function SpaceSettingsModal({
                       SpaceCaslSubject.Settings,
                     )}
                   />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="sync">
+                  <SyncConfigForm />
                 </Tabs.Panel>
 
                 <Tabs.Panel value="members">
@@ -85,6 +93,7 @@ export default function SpaceSettingsModal({
                     )}
                   />
                 </Tabs.Panel>
+                
               </Tabs>
             </div>
           </Modal.Body>

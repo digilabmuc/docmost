@@ -71,6 +71,11 @@ export const SyncConfigForm: React.FC<SyncConfigFormProps> = ({
         console.log(response);
         const spacesList = Array.isArray(response) ? response : response.items || [];
         setSpaces(spacesList);
+
+        // Automatically select the first space if available
+        if (spacesList.length > 0) {
+          form.setFieldValue('targetConfig.spaceId', spacesList[0].id);
+        }
       } catch (error) {
         notifications.show({
           title: 'Error',
@@ -312,6 +317,7 @@ export const SyncConfigForm: React.FC<SyncConfigFormProps> = ({
             label: space.name
           }))}
           disabled={loading}
+          value={spaces[0]?.id}
           {...form.getInputProps('targetConfig.spaceId')}
         />
 
@@ -321,7 +327,7 @@ export const SyncConfigForm: React.FC<SyncConfigFormProps> = ({
           mb="sm"
           disabled={!form.values.sourceConfig?.repository || !form.values.credentials?.accessToken}
         >
-          Deploy Connection
+          Fetch data
         </Button>
       </Stack>
     </form>

@@ -56,7 +56,7 @@ export default function SpaceSettingsModal({
                     {t("Settings")}
                   </Tabs.Tab>
                   <Tabs.Tab fw={500} value="sync">
-                    {t("Sync")}
+                    {t("GitHub Sync")}
                   </Tabs.Tab>
                   <Tabs.Tab fw={500} value="members">
                     {t("Members")}

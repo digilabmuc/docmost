@@ -265,6 +265,39 @@ export const SyncConfigForm: React.FC<SyncConfigFormProps> = ({
         color: 'green',
       });
 
+      // Fetch all pages again to refresh the UI
+      try {
+        notifications.show({
+          title: 'Refreshing',
+          message: 'Updating page list...',
+          loading: true,
+          autoClose: false,
+          id: 'refresh-pages'
+        });
+
+        const recentChanges = await getRecentChanges(values.targetConfig.spaceId);
+        console.log('Refreshed pages:', recentChanges);
+
+        notifications.update({
+          id: 'refresh-pages',
+          title: 'Updated',
+          message: 'Page list has been refreshed',
+          color: 'green',
+          loading: false,
+          autoClose: 2000
+        });
+      } catch (error) {
+        console.error('Failed to refresh pages:', error);
+        notifications.update({
+          id: 'refresh-pages',
+          title: 'Warning',
+          message: 'Failed to refresh page list. You may need to reload the page.',
+          color: 'yellow',
+          loading: false,
+          autoClose: 3000
+        });
+      }
+
       // Navigate to the last imported page
       if (lastImportedPage && navigate) {
         const space = spaces.find(s => s.id === values.targetConfig.spaceId);

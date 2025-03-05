@@ -1,0 +1,47 @@
+name: Sync Upstream and Create PR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream and fetch latest main
+        run: |
+          git remote add upstream https://github.com/docmost/docmost.git || true
+          git fetch upstream main
+
+      - name: Checkout feature/github-import branch
+        run: |
+          git checkout feature/github-import
+          git pull origin feature/github-import
+
+      - name: Merge upstream/main into feature/github-import
+        run: |
+          git merge --no-edit upstream/main || true
+
+      - name: Push changes to private repo
+        run: |
+          git push origin feature/github-import
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature/github-import
+          base: main
+          title: "Sync latest changes from upstream/main"
+          body: "This PR merges the latest changes from upstream/main into feature/github-import."
+          draft: false
